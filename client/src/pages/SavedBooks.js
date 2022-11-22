@@ -1,69 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { Jumbotron, Container, CardColumns, Card, Button } from 'react-bootstrap';
 
-import { getMe, deleteBook } from '../utils/API';
 import Auth from '../utils/auth';
 import { removeBookId } from '../utils/localStorage';
 
+import { useQuery } from '@apollo/client';
+import { GET_ME } from '../utils/queries';
+
+import { useMutation } from '@apollo/client';
+import { REMOVE_BOOK } from '../utils/mutations';
+
 const SavedBooks = () => {
-  const [userData, setUserData] = useState({});
+  const { loading, data } = useQuery(GET_ME);
 
-  // use this to determine if `useEffect()` hook needs to run again
-  const userDataLength = Object.keys(userData).length;
+  const [deleteBook, { error }] =useMutation(REMOVE_BOOK);
 
-  useEffect(() => {
-    const getUserData = async () => {
-      try {
-        const token = Auth.loggedIn() ? Auth.getToken() : null;
+  const userData = data?.me || {};
 
-        if (!token) {
-          return false;
-        }
-
-        const response = await getMe(token);
-
-        if (!response.ok) {
-          throw new Error('something went wrong!');
-        }
-
-        const user = await response.json();
-        setUserData(user);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    getUserData();
-  }, [userDataLength]);
-
-  // create function that accepts the book's mongo _id value as param and deletes the book from the database
   const handleDeleteBook = async (bookId) => {
     const token = Auth.loggedIn() ? Auth.getToken() : null;
-
+    
     if (!token) {
       return false;
     }
-
     try {
-      const response = await deleteBook(bookId, token);
+     await deleteBook({
+      variables: { bookId },
+  });
 
-      if (!response.ok) {
-        throw new Error('something went wrong!');
-      }
-
-      const updatedUser = await response.json();
-      setUserData(updatedUser);
-      // upon success, remove book's id from localStorage
-      removeBookId(bookId);
+  // upon success remove id from local stor
+removeBookId(bookId);
+document.getElementById(bookId).remove();
+let counterEl = document.getElementById('counter');
+let currentNum = parseInt(counterEl.innerText.split(' ')[1]);
+if (currentNum === 1) {
+  return (counterEl.innerText = 'You have no saved books!');
+} else {
+  counterEl.innerText = `Viewing ${currentNum -1 } saved ${
+    currentNum === 1 ? 'book' : 'books'
+  }`;
+}
     } catch (err) {
       console.error(err);
     }
   };
 
-  // if data isn't here yet, say so
-  if (!userDataLength) {
+  //wait for the data if not there
+  if (loading) {
     return <h2>LOADING...</h2>;
   }
+
 
   return (
     <>
@@ -73,21 +59,37 @@ const SavedBooks = () => {
         </Container>
       </Jumbotron>
       <Container>
-        <h2>
+        <h2 id='counter'>
           {userData.savedBooks.length
-            ? `Viewing ${userData.savedBooks.length} saved ${userData.savedBooks.length === 1 ? 'book' : 'books'}:`
+            ? `Viewing ${userData.savedBooks.length} saved ${
+              userData.savedBooks.length === 1 ? 'book' : 'books'}:`
             : 'You have no saved books!'}
         </h2>
         <CardColumns>
-          {userData.savedBooks.map((book) => {
+          {userData.savedBooks.map((book, key) => {
             return (
-              <Card key={book.bookId} border='dark'>
-                {book.image ? <Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' /> : null}
+              <Card key={key} id={book.bookId} border='dark'>
+                {book.image ? (
+                <Card.Img 
+                src={book.image}
+                 alt={`The cover for ${book.title}`} 
+                 variant='top' 
+                 /> 
+                 ) : null}
                 <Card.Body>
                   <Card.Title>{book.title}</Card.Title>
                   <p className='small'>Authors: {book.authors}</p>
                   <Card.Text>{book.description}</Card.Text>
-                  <Button className='btn-block btn-danger' onClick={() => handleDeleteBook(book.bookId)}>
+                  <a
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  id="link"
+                  href={book.link}
+                  >
+                    {book.link == null ? 'No link available' : 'Link to google'}
+                    </a>
+                  <Button className='btn-block btn-danger' 
+                  onClick={() => handleDeleteBook(book.bookId)}>
                     Delete this Book!
                   </Button>
                 </Card.Body>
@@ -95,6 +97,7 @@ const SavedBooks = () => {
             );
           })}
         </CardColumns>
+        {error && <div>There was an issue viewing your books</div>}
       </Container>
     </>
   );
