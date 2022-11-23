@@ -30,7 +30,7 @@ const LoginForm = () => {
       console.error(e);
     }
     
-    const [userFormData, setUserFormData] = useState({ email: '', password: '' });
+    const [formState, setFormState] = useState({ email: '', password: '' });
     
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -44,7 +44,9 @@ const LoginForm = () => {
       return (
         <>
       <Form noValidate validated={validated} onSubmit={handleFormSubmit}>
-        <Alert dismissible onClose={() => setShowAlert(false)} 
+        <Alert 
+        dismissible 
+        onClose={() => setShowAlert(false)} 
         show={showAlert} 
         variant='danger'>
           Something went wrong with your login credentials!
@@ -55,8 +57,8 @@ const LoginForm = () => {
             type='text'
             placeholder='Your email'
             name='email'
-            value={userFormData.email}
-            onChange={handleInputChange}
+            value={formState.email}
+            onChange={handleChange}
             required
             />
           <Form.Control.Feedback type='invalid'>

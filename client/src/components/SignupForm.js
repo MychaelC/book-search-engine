@@ -12,7 +12,7 @@ const SignupForm = () => {
   // set state for alert
   const [showAlert, setShowAlert] = useState(false);
   // set initial form state
-  const [userFormData, setUserFormData] = useState({ 
+  const [formState, setFormState] = useState({ 
     username: '', 
     email: '', 
     password: '' 
