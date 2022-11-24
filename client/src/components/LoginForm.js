@@ -8,6 +8,7 @@ import { useMutation } from '@apollo/client';
 import { LOGIN_USER } from '../utils/mutations';
 
 const LoginForm = () => {
+  const [formState, setFormState] = useState({ email: '', password: '' });
   const [validated] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   
@@ -30,7 +31,7 @@ const LoginForm = () => {
       console.error(e);
     }
     
-    const [formState, setFormState] = useState({ email: '', password: '' });
+  };
     
     const handleChange = (event) => {
         const { name, value } = event.target;
@@ -90,7 +91,6 @@ const LoginForm = () => {
       </Form>
     </>
   );
-};
 };
 
 export default LoginForm;

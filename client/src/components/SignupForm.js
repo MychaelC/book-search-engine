@@ -21,7 +21,7 @@ const SignupForm = () => {
   const handleChange = (event) => {
     const { name, value } = event.target;
 
-    setUserFormData({ 
+    setFormState({ 
       ...formState, 
       [name]: value 
     });
@@ -34,6 +34,7 @@ const SignupForm = () => {
 
     //try catch to instead of promises to handle errors
     try {
+      console.log(formState)
       const { data } = await addUser({
       variables: { ...formState },
     });
